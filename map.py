@@ -71,16 +71,16 @@ def get_data(date, location, sf, tx):
                 if ll == "'''\n" and not skip:
                     skip = True
                     continue
-            if ll == "'''\n" and skip: skip = False
-            if not ll or skip or ll[0] == '#': continue
+                if ll == "'''\n" and skip: skip = False
+                if not ll or skip or ll[0] == '#': continue
 
-            s, la, lo = ll.split(',')
+                s, la, lo = ll.split(',')
         
-            if int(s) <= prev_seq: continue
-            if int(s) == seq: break
+                if int(s) <= prev_seq: continue
+                if int(s) == seq: break
 
-            dist = gpd.geodesic(base, (float(la), float(lo))).m
-            data.append((int(s), DROPPED_RSSI, dist, float(la), float(lo)))
+                dist = gpd.geodesic(base, (float(la), float(lo))).m
+                data.append((int(s), DROPPED_RSSI, dist, float(la), float(lo)))
 
         dist = gpd.geodesic(base, (lat, long)).m
         data.append((seq, RSSI, dist, lat, long))
@@ -141,7 +141,7 @@ def map(data):
     print(lim)
 
     for p in data:
-        d["color"].append('black' if p[1] == -999 else RSSI_color(p[1], lim))
+        d["color"].append("#000000" if p[1] == DROPPED_RSSI else RSSI_color(p[1], lim))
         d["geometry"].append(Point( (p[-1], p[-2]) ))
 
     gdf = gpd.GeoDataFrame(d, crs="EPSG:4326")
