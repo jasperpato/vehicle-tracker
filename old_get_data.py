@@ -1,5 +1,20 @@
 from map import COORDS, MAX_DIST, usage, distance
 
+
+def RSSI_limits(data):
+    '''
+    Returns (min, max) of RSSI values
+    '''
+    min, max = -DROPPED_RSSI, DROPPED_RSSI
+    for d in data:
+        if d[1] == DROPPED_RSSI: continue
+        if d[1] < min: min = d[1]
+        if d[1] > max: max = d[1]
+
+    print(min, max)
+    return (min, max)
+
+
 def get_data(date, location, sf, tx):
 
     '''

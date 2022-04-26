@@ -8,6 +8,7 @@ import sys
 DROPPED_RSSI = -999
 MAX_DIST = 300
 RSSI_LIMITS = (-120, -50)
+
 COORDS = {
   "Cameron": (-31.980937, 115.819665),
   "Reid": (-31.979143,115.818025)
@@ -96,11 +97,8 @@ def combine_data(date, location, sf, tx):
 
     # find and delete outliers
 
-
     for i, d in enumerate(data):
         if d[2] > MAX_DIST: data.pop(i)
-
-    
 
     return data
 
@@ -111,20 +109,6 @@ def display(data):
     '''
     for l in data:
         print(f"seq: {l[0]}, RSSI: {l[1]}, dist: {round(l[2], 4)}, loc: {(l[3], l[4])}")
-
-
-def RSSI_limits(data):
-    '''
-    Returns (min, max) of RSSI values
-    '''
-    min, max = -DROPPED_RSSI, DROPPED_RSSI
-    for d in data:
-        if d[1] == DROPPED_RSSI: continue
-        if d[1] < min: min = d[1]
-        if d[1] > max: max = d[1]
-
-    print(min, max)
-    return (min, max)
 
 
 def RSSI_color(r):
