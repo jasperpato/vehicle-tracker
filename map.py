@@ -1,10 +1,12 @@
-import geopandas as gpd
+import geopandas as gpds
+from geopy import distance
 import matplotlib.pyplot as plt
 from shapely.geometry import Point
 import sys
 
 
 DROPPED_RSSI = -999
+MAX_DIST = 300
 COORDS = {
   "Cameron": (-31.980937, 115.819665),
   "Reid": (-31.979143,115.818025)
@@ -23,13 +25,13 @@ def get_data(date, location, sf, tx):
     Handles both missing and corrupted packets as dropped packets, with
     RSSI = DROPPED_RSSI.
     Cannot handles resets (decreased seq number) in files.
+    Skips Python block and line comments in files.
     Returns packet reception data as list of tuples (seq, RSSI, dist, lat, long).
     '''
-    import geopy.distance as gpd
 
     try:
         n = f"results/{date}-{location.capitalize()}-SF{sf}-{tx}dBm-{{}}.csv"
-        print(n.format("Receiver"))
+        # print(n.format("Receiver"))
         r = open(n.format("Receiver"), 'r')
         s = open(n.format("Sender"), 'r')
   
@@ -59,7 +61,7 @@ def get_data(date, location, sf, tx):
         try:
             seq = int(d[1])
             lat, long = float(d[2]), float(d[3])
-            RSSI = int(d[10])
+            RSSI = int(d[9])
 
         except: continue
     
@@ -75,17 +77,23 @@ def get_data(date, location, sf, tx):
                 if not ll or skip or ll[0] == '#': continue
 
                 s, la, lo = ll.split(',')
+                s, la, lo = int(s), float(la), float(lo)
         
-                if int(s) <= prev_seq: continue
-                if int(s) == seq: break
+                if s <= prev_seq: continue
+                if s == seq: break
 
-                dist = gpd.geodesic(base, (float(la), float(lo))).m
-                data.append((int(s), DROPPED_RSSI, dist, float(la), float(lo)))
+                dist = distance.distance( base, (la, lo) ).m
+                data.append((s, DROPPED_RSSI, dist, la, lo))
 
-        dist = gpd.geodesic(base, (lat, long)).m
+        dist = distance.distance( base, (lat, long) ).m
         data.append((seq, RSSI, dist, lat, long))
 
         prev_seq = seq
+
+    # find and delete outliers
+
+    for i, d in enumerate(data):
+        if d[2] > MAX_DIST: data.pop(i)
 
     return data
 
@@ -112,7 +120,7 @@ def RSSI_limits(data):
 
 def RSSI_color(r, lim):
     '''
-    Takes r: RSSI, lim: (min RSSI, max RSSI)
+    Takes r: RSSI, lim: (min, max) RSSI in data
     Returns hex string of RSSI color gradient from green -> yellow -> red
     '''
     green = int(255 * min(1, 2 * (r - lim[0]) / (lim[1] - lim[0])))
@@ -120,7 +128,7 @@ def RSSI_color(r, lim):
     return "#{:02X}{:02X}00".format(red, green)
 
 
-def map(data):
+def map(data, location):
 
     _, ax = plt.subplots(figsize=(6,8))
 
@@ -130,22 +138,30 @@ def map(data):
         ("roads-line", "darkgrey"),
         ("buildings-polygon", "grey"),
     ]:
-        shp = gpd.read_file(f"mygeodata/map/{name}.shp")
+        shp = gpds.read_file(f"mygeodata/map/{name}.shp")
         shp.plot(ax=ax, color=col)
-    
+
     # data points
 
     d = { "color": [], "geometry": [] }
 
     lim = RSSI_limits(data)
-    print(lim)
+    # print(lim)
 
     for p in data:
         d["color"].append("#000000" if p[1] == DROPPED_RSSI else RSSI_color(p[1], lim))
         d["geometry"].append(Point( (p[-1], p[-2]) ))
 
-    gdf = gpd.GeoDataFrame(d, crs="EPSG:4326")
+    gdf = gpds.GeoDataFrame(d, crs="EPSG:4326")
     gdf.plot(ax=ax, color=gdf["color"], markersize=1)
+
+    # base station coordinate
+
+    base = Point( COORDS[location.capitalize()][1], COORDS[location.capitalize()][0] )
+    c = { "geometry": [ base ] }
+    gdf = gpds.GeoDataFrame(c, crs="EPSG:4326")
+    gdf.plot(ax=ax, color="blue", markersize=20)
+
     plt.show(block=True)
 
 if __name__ == "__main__":
@@ -155,7 +171,10 @@ if __name__ == "__main__":
         exit(1)
 
     data = get_data(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
-    map(data)
+    
+    # display(data)
+
+    map(data, sys.argv[2])
   
 
   
