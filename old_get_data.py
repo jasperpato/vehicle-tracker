@@ -28,10 +28,10 @@ def get_data(date, location, sf, tx):
     '''
 
     try:
-        n = f"results/{date}-{location.capitalize()}-SF{sf}-{tx}dBm-{{}}.csv"
-        # print(n.format("Receiver"))
-        r = open(n.format("Receiver"), 'r')
-        s = open(n.format("Sender"), 'r')
+        n = f'results/{date}-{location.capitalize()}-SF{sf}-{tx}dBm-{{}}.csv'
+        # print(n.format('Receiver'))
+        r = open(n.format('Receiver'), 'r')
+        s = open(n.format('Sender'), 'r')
   
     except:
         usage()
@@ -47,10 +47,10 @@ def get_data(date, location, sf, tx):
     for i, l in enumerate(r.readlines()):
 
         # skip over comments in csv file (''' and #)
-        if l == "'''\n" and not skip:
+        if l == ''''\n' and not skip:
             skip = True
             continue
-        if l == "'''\n" and skip: skip = False
+        if l == ''''\n' and skip: skip = False
         if not l or skip or l[0] == '#': continue
     
         d = l.split(',')
@@ -68,10 +68,10 @@ def get_data(date, location, sf, tx):
             for ll in sender:
 
                 # skip over comments in csv file (''' and #)
-                if ll == "'''\n" and not skip:
+                if ll == ''''\n' and not skip:
                     skip = True
                     continue
-                if ll == "'''\n" and skip: skip = False
+                if ll == ''''\n' and skip: skip = False
                 if not ll or skip or ll[0] == '#': continue
 
                 s, la, lo = ll.split(',')

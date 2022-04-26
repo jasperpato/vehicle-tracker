@@ -6,35 +6,40 @@ import sys
 
 
 DROPPED_RSSI = -999
-MAX_DIST = 400
 RSSI_LIMITS = (-120, -50)
+PRR_LIMITS = (0.4, 1)
+
+MAX_DIST = 400
+
+LEFT, TOP, RIGHT, BOTTOM = 115.814, -31.976, 115.822, -31.986 # map bounds
+NUM_SQUARES = 30 # number of square lengths along each axis
+WIDTH, HEIGHT = (RIGHT-LEFT) / NUM_SQUARES, (TOP - BOTTOM) / NUM_SQUARES
 
 COORDS = {
-  "Cameron": (-31.980937, 115.819665),
-  "Reid": (-31.979143,115.818025)
+  'Cameron': (-31.980937, 115.819665),
+  'Reid': (-31.979143,115.818025)
 }
 
 
 def usage():
     print('Usage: python3 analysis.py date location sf tx')
-    print("eg. python3 analysis.py 24-04 Cameron 7 13")
+    print('eg. python3 analysis.py 24-04 Cameron 7 13')
 
 
 def combine_data(date, location, sf, tx):
     '''
     Takes experiment details as inputs.
     Uses receiver and sender files to create a complete data set.
-    Handles both missing and corrupted packets as dropped packets, with
-    RSSI = DROPPED_RSSI.
-    Cannot handles resets (decreased seq number) in files.
+    Treats both missing and corrupted packets as dropped packets, with RSSI = DROPPED_RSSI.
+    Cannot handle resets or any decreased or duplicated seq number in files.
     Skips Python block and line comments in files.
     Returns packet reception data as list of tuples (seq, RSSI, dist, lat, long).
     '''
 
     try:
-        n = f"results/{date}-{location.capitalize()}-SF{sf}-{tx}dBm-{{}}.csv"
-        r = open(n.format("Receiver"), 'r')
-        s = open(n.format("Sender"), 'r')
+        n = f'results/{date}-{location.capitalize()}-SF{sf}-{tx}dBm-{{}}.csv'
+        r = open(n.format('Receiver'), 'r')
+        s = open(n.format('Sender'), 'r')
   
     except:
         usage()
@@ -70,10 +75,10 @@ def combine_data(date, location, sf, tx):
         for rl in receiver:
 
             # skip over comments in csv file (''' and #)
-            if l == "'''\n" and not r_skip:
+            if l.strip() == "'''\n" and not r_skip:
                 r_skip = True
                 continue
-            if l == "'''\n" and r_skip:
+            if l.strip() == "'''\n" and r_skip:
                 r_skip = False
                 continue
             if not l or r_skip or l[0] == '#': continue
@@ -106,64 +111,116 @@ def display(data):
     Prints data
     '''
     for l in data:
-        print(f"seq: {l[0]}, RSSI: {l[1]}, dist: {round(l[2], 4)}, loc: {(l[3], l[4])}")
+        print(f'seq: {l[0]}, RSSI: {l[1]}, dist: {round(l[2], 4)}, loc: {(l[3], l[4])}')
 
 
-def RSSI_color(r):
+def grid(data):
     '''
-    Takes r: RSSI, lim: (min, max) RSSI in data
-    Returns hex string of RSSI color gradient from green -> yellow -> red
+    Input: list of points [ (seq, RSSI, dist, long, lat), ... ]
+    Output: dict of bins { (bottom, left): (meanRSSI, meanDist, PRR) }
     '''
-    lim = RSSI_LIMITS
-    green = int(255 * min(1, 2 * (r - lim[0]) / (lim[1] - lim[0])))
-    red = int(255 * min(1, 2 * (1 - (r - lim[0]) / (lim[1] - lim[0]))))
-    return "#{:02X}{:02X}00".format(red, green)
+    bins = {}
+    for i in range(NUM_SQUARES):
+        x = LEFT + WIDTH * i
+        for j in range(NUM_SQUARES):
+            y = BOTTOM + HEIGHT * j
+            bins[(x,y)] = []
+
+    # sort data into bins
+    for l in data:
+        for (x, y) in bins.keys():
+            lat, long = l[3:]
+            # print(x, y, lat, long)
+            if x <= long and long < x + WIDTH and y <= lat and lat < y + HEIGHT:
+                bins[(x,y)].append((l[1], l[2]))
+                # print('add')
+                break
+
+    # aggregate bin data
+    remove = []
+    for (x, y), bin_data in bins.items():
+        if len(bin_data) == 0:
+            remove.append((x,y))
+            continue
+        RSSIsum, distSum, dropped = 0, 0, 0 
+        for d in bin_data:
+            if d[0] == DROPPED_RSSI: dropped += 1
+            else: RSSIsum += d[0]
+            distSum += d[1]
+        l = len(bin_data)
+        if l - dropped == 0: meanRSSI = -999
+        else: meanRSSI = RSSIsum / (l - dropped)
+        bins[(x,y)] = (meanRSSI, distSum / l, 1 - dropped / l)
+
+    for r in remove: bins.pop(r)       
+    return bins
 
 
-def map(data, location):
+def color(r, lim):
+    '''
+    Returns hex string of color gradient from green -> yellow -> red
+    '''
+    green = int(255 * max(0, min(1, 2 * (r - lim[0]) / (lim[1] - lim[0]))))
+    red = int(255 * max(0, min(1, 2 * (1 - (r - lim[0]) / (lim[1] - lim[0])))))
+    return '#{:02X}{:02X}00'.format(red, green)
 
-    _, ax = plt.subplots(figsize=(6,8))
+
+def map(data, grid_data, location):
+    '''
+    Input: list of points [ (seq, RSSI, dist, long, lat), ... ], experiment location string
+    Plots points on map, color-coded by signal strength.
+    Plots bins color-coded by PRR.
+    '''
+
+    _, ax = plt.subplots(figsize=(5,7))
 
     # background map
 
     for name, col in [
-        ("roads-line", "darkgrey"),
-        ("buildings-polygon", "grey"),
+        ('roads-line', 'darkgrey'),
+        ('buildings-polygon', 'grey'),
     ]:
-        shp = gpds.read_file(f"mygeodata/map/{name}.shp")
+        shp = gpds.read_file(f'mygeodata/map/{name}.shp')
         shp.plot(ax=ax, color=col)
+
+    # grid
+
+    for (x,y), d in grid_data.items():
+        c = color(d[2], PRR_LIMITS)
+        p = plt.Rectangle((x,y), WIDTH, HEIGHT, color=c, ec=c, alpha = 0.5)
+        ax.add_patch(p)
 
     # data points
 
-    d = { "color": [], "geometry": [] }
+    d = { 'color': [], 'geometry': [] }
 
     for p in data:
-        d["color"].append("#000000" if p[1] == DROPPED_RSSI else RSSI_color(p[1]))
-        d["geometry"].append(Point( (p[-1], p[-2]) ))
+        d['color'].append('#000000' if p[1] == DROPPED_RSSI else color(p[1], RSSI_LIMITS))
+        d['geometry'].append(Point( (p[-1], p[-2]) ))
 
-    gdf = gpds.GeoDataFrame(d, crs="EPSG:4326")
-    gdf.plot(ax=ax, color=gdf["color"], markersize=1)
+    gdf = gpds.GeoDataFrame(d, crs='EPSG:4326')
+    gdf.plot(ax=ax, color=gdf['color'], ec=gdf['color'], markersize=1)
 
     # base station coordinate
 
     base = Point( COORDS[location.capitalize()][1], COORDS[location.capitalize()][0] )
-    c = { "geometry": [ base ] }
-    gdf = gpds.GeoDataFrame(c, crs="EPSG:4326")
-    gdf.plot(ax=ax, color="blue", markersize=20)
+    c = { 'geometry': [ base ] }
+    gdf = gpds.GeoDataFrame(c, crs='EPSG:4326')
+    gdf.plot(ax=ax, color='blue', markersize=20)
 
     plt.show(block=True)
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
 
     if len(sys.argv) != 5:
         usage()
         exit(1)
 
     data = combine_data(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
-    
-    display(data)
-
-   # map(data, sys.argv[2])
+    # display(data)
+    grid_data = grid(data)
+    map(data, grid_data, sys.argv[2])
   
 
   
