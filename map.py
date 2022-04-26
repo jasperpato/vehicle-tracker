@@ -6,7 +6,7 @@ import sys
 
 
 DROPPED_RSSI = -999
-MAX_DIST = 300
+MAX_DIST = 400
 RSSI_LIMITS = (-120, -50)
 
 COORDS = {
@@ -72,18 +72,16 @@ def combine_data(date, location, sf, tx):
             # skip over comments in csv file (''' and #)
             if l == "'''\n" and not r_skip:
                 r_skip = True
-                print("'''")
                 continue
-            if l == "'''\n" and r_skip: r_skip = False
-            if not l or r_skip or l[0] == '#':
-                print('#')
+            if l == "'''\n" and r_skip:
+                r_skip = False
                 continue
+            if not l or r_skip or l[0] == '#': continue
 
             try:
                 r_data = rl.split(',')
                 if len(r_data) != 14: continue
                 r_seq, rssi = int(r_data[1]), int(r_data[9])
-                # print(r_seq, rssi)
 
             except: pass
 
@@ -139,9 +137,6 @@ def map(data, location):
 
     d = { "color": [], "geometry": [] }
 
-    # lim = RSSI_limits(data)
-    # print(lim)
-
     for p in data:
         d["color"].append("#000000" if p[1] == DROPPED_RSSI else RSSI_color(p[1]))
         d["geometry"].append(Point( (p[-1], p[-2]) ))
@@ -166,9 +161,9 @@ if __name__ == "__main__":
 
     data = combine_data(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
     
-    # display(data)
+    display(data)
 
-    map(data, sys.argv[2])
+   # map(data, sys.argv[2])
   
 
   
