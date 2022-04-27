@@ -256,7 +256,7 @@ def report(point_data, bin_data):
 
     for i in range(len(RSSIs)):
         if len(RSSIs[i]) == 0 or len(PRRs) == 0: continue
-        print(f'{i * BIN_RADIUS} <= Radius < {(i+1) * BIN_RADIUS}')
+        print(f'{i * BIN_RADIUS} <= distance < {(i+1) * BIN_RADIUS}')
         print(f'Mean RSSI: {sum(RSSIs[i]) / len(RSSIs[i])}')
         print(f'Mean PRR: {sum(PRRs[i]) / len(PRRs[i])}\n')
 
@@ -283,7 +283,10 @@ if __name__ == '__main__':
     if sys.argv[1] == '-m' or sys.argv[1] == '-r':
         sys.argv.pop(1)
 
-    for a in sys.argv[1:]:
+    all = False
+    if sys.argv[1] == 'all': all = True
+
+    for a in (range(1,7) if all else sys.argv[1:]):
 
         BASE = exp[int(a)][1]
 
