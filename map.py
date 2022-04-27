@@ -15,6 +15,7 @@ LEFT, TOP, RIGHT, BOTTOM = 115.814, -31.976, 115.822, -31.986 # map bounds
 NUM_SQUARES = 30 # number of square lengths along each axis
 WIDTH, HEIGHT = (RIGHT-LEFT) / NUM_SQUARES, (TOP - BOTTOM) / NUM_SQUARES
 
+BASE = ''
 COORDS = {
   'Cameron': (-31.980937, 115.819665),
   'Reid': (-31.979143,115.818025)
@@ -22,8 +23,8 @@ COORDS = {
 
 
 def usage():
-    print('Usage: python3 analysis.py date location sf tx')
-    print('eg. python3 analysis.py 24-04 Cameron 7 13')
+    print('Usage: python3 map.py *experiment_number(s)')
+    print('eg. python3 map.py 1 4')
 
 
 def combine_data(date, location, sf, tx):
@@ -116,6 +117,7 @@ def display(data):
 
 def grid(data):
     '''
+    Groups points into a grid of bins and calculates aggregate data for each bin.
     Input: list of points [ (seq, RSSI, dist, long, lat), ... ]
     Output: dict of bins { (bottom, left): (meanRSSI, meanDist, PRR) }
     '''
@@ -129,30 +131,39 @@ def grid(data):
     # sort data into bins
     for l in data:
         for (x, y) in bins.keys():
+
             lat, long = l[3:]
-            # print(x, y, lat, long)
+
             if x <= long and long < x + WIDTH and y <= lat and lat < y + HEIGHT:
                 bins[(x,y)].append((l[1], l[2]))
-                # print('add')
                 break
 
     # aggregate bin data
     remove = []
     for (x, y), bin_data in bins.items():
+        
         if len(bin_data) == 0:
             remove.append((x,y))
             continue
-        RSSIsum, distSum, dropped = 0, 0, 0 
+
+        RSSIsum, distSum, dropped = 0, 0, 0
+
         for d in bin_data:
+
             if d[0] == DROPPED_RSSI: dropped += 1
             else: RSSIsum += d[0]
+            
             distSum += d[1]
+
         l = len(bin_data)
+
         if l - dropped == 0: meanRSSI = -999
         else: meanRSSI = RSSIsum / (l - dropped)
+
         bins[(x,y)] = (meanRSSI, distSum / l, 1 - dropped / l)
 
-    for r in remove: bins.pop(r)       
+    for r in remove: bins.pop(r) 
+
     return bins
 
 
@@ -165,7 +176,7 @@ def color(r, lim):
     return '#{:02X}{:02X}00'.format(red, green)
 
 
-def map(data, grid_data, location):
+def map(data, grid_data):
     '''
     Input: list of points [ (seq, RSSI, dist, long, lat), ... ], experiment location string
     Plots points on map, color-coded by signal strength.
@@ -181,13 +192,13 @@ def map(data, grid_data, location):
         ('buildings-polygon', 'grey'),
     ]:
         shp = gpds.read_file(f'mygeodata/map/{name}.shp')
-        shp.plot(ax=ax, color=col)
+        shp.plot(ax=ax, color=col, zorder=-1)
 
     # grid
 
     for (x,y), d in grid_data.items():
         c = color(d[2], PRR_LIMITS)
-        p = plt.Rectangle((x,y), WIDTH, HEIGHT, color=c, ec=c, alpha = 0.5)
+        p = plt.Rectangle((x,y), WIDTH, HEIGHT, color=c, alpha = 0.5)
         ax.add_patch(p)
 
     # data points
@@ -199,28 +210,39 @@ def map(data, grid_data, location):
         d['geometry'].append(Point( (p[-1], p[-2]) ))
 
     gdf = gpds.GeoDataFrame(d, crs='EPSG:4326')
-    gdf.plot(ax=ax, color=gdf['color'], ec=gdf['color'], markersize=1)
+    gdf.plot(ax=ax, color=gdf['color'], markersize=1)
 
     # base station coordinate
 
-    base = Point( COORDS[location.capitalize()][1], COORDS[location.capitalize()][0] )
+    base = Point( COORDS[BASE][1], COORDS[BASE][0] )
     c = { 'geometry': [ base ] }
     gdf = gpds.GeoDataFrame(c, crs='EPSG:4326')
     gdf.plot(ax=ax, color='blue', markersize=20)
 
-    plt.show(block=True)
+    # plt.show(block=True)
 
 
 if __name__ == '__main__':
+    '''
+    Usage: python3 map.py *experiment_number(s)
+    '''
 
-    if len(sys.argv) != 5:
-        usage()
-        exit(1)
+    exp = {
+        1: ('24-04', 'Reid', 7, 13),
+        2: ('24-04', 'Reid', 7, 18),
+        3: ('24-04', 'Reid', 8, 20),
+        4: ('24-04', 'Cameron', 7, 13),
+        5: ('24-04', 'Cameron', 7, 18),
+        6: ('24-04', 'Cameron', 8, 20),
+    }
 
-    data = combine_data(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
-    # display(data)
-    grid_data = grid(data)
-    map(data, grid_data, sys.argv[2])
+    for a in sys.argv[1:]:
+        BASE = exp[int(a)][1]
+        data = combine_data(*exp[int(a)])
+        grid_data = grid(data)
+        map(data, grid_data)
+    
+    plt.show(block=True)
   
 
   
