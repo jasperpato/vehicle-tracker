@@ -6,13 +6,15 @@ import sys
 
 
 DROPPED_RSSI = -999
+
 RSSI_LIMITS = (-120, -50)
 PRR_LIMITS = (0.4, 1)
 
-MAX_DIST = 400
+MAX_DIST = 300
 
 LEFT, TOP, RIGHT, BOTTOM = 115.814, -31.976, 115.822, -31.986 # map bounds
-NUM_SQUARES = 30 # number of square lengths along each axis
+NUM_SQUARES = 40 # number of square lengths along each axis
+
 WIDTH, HEIGHT = (RIGHT-LEFT) / NUM_SQUARES, (TOP - BOTTOM) / NUM_SQUARES
 
 BASE = ''
@@ -169,7 +171,9 @@ def grid(data):
 
 def color(r, lim):
     '''
-    Returns hex string of color gradient from green -> yellow -> red
+    Returns hex string of color gradient from green -> yellow -> red,
+    based on the value of r compared to the limits (min, max).
+    Green means high
     '''
     green = int(255 * max(0, min(1, 2 * (r - lim[0]) / (lim[1] - lim[0]))))
     red = int(255 * max(0, min(1, 2 * (1 - (r - lim[0]) / (lim[1] - lim[0])))))
@@ -178,9 +182,8 @@ def color(r, lim):
 
 def map(data, grid_data):
     '''
-    Input: list of points [ (seq, RSSI, dist, long, lat), ... ], experiment location string
-    Plots points on map, color-coded by signal strength.
-    Plots bins color-coded by PRR.
+    Input: list of points [ (seq, RSSI, dist, long, lat), ... ]
+    Plots data points color-coded by signal strength, and aggregated data squares color-coded by PRR.
     '''
 
     _, ax = plt.subplots(figsize=(5,7))
@@ -218,8 +221,6 @@ def map(data, grid_data):
     c = { 'geometry': [ base ] }
     gdf = gpds.GeoDataFrame(c, crs='EPSG:4326')
     gdf.plot(ax=ax, color='blue', markersize=20)
-
-    # plt.show(block=True)
 
 
 if __name__ == '__main__':
