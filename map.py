@@ -263,7 +263,7 @@ def report(point_data, bin_data):
 
 if __name__ == '__main__':
     '''
-    Usage: python3 map.py [-m] [-r] *experiment_number(s)
+    Usage: python3 map.py [-m] [-r] [--all] *experiment_number(s)
     [-m] for only mapping
     [-r] for only reporting
     Default is mapping and reporting.
@@ -284,7 +284,7 @@ if __name__ == '__main__':
         sys.argv.pop(1)
 
     all = False
-    if sys.argv[1] == 'all': all = True
+    if sys.argv[1] == '--all': all = True
 
     for a in (range(1,7) if all else sys.argv[1:]):
 
