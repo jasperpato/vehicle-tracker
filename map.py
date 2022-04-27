@@ -1,6 +1,7 @@
 import geopandas as gpds
 from geopy import distance
 import matplotlib.pyplot as plt
+from matplotlib import patches
 from shapely.geometry import Point
 import sys
 
@@ -17,6 +18,8 @@ LEFT, TOP, RIGHT, BOTTOM = 115.814, -31.976, 115.822, -31.986 # map bounds
 NUM_SQUARES = 40 # number of square lengths along each axis
 
 WIDTH, HEIGHT = (RIGHT-LEFT) / NUM_SQUARES, (TOP - BOTTOM) / NUM_SQUARES
+
+BIN_RADIUS = 30
 
 BASE = ''
 COORDS = {
@@ -223,22 +226,39 @@ def map(data, grid_data):
     gdf.plot(ax=ax, color='blue', markersize=20)
 
 
-def report_data(data):
-    sum, num = 0, 0
-    for d in data:
-        if d[1] != DROPPED_RSSI:
-            sum += d[1] # / d[2] ** 2
-            num += 1
-    # print('Mean RSSI / d^2: {}'.format(sum / num))
-    print('Mean RSSI: {}'.format(sum / num))
+def report(point_data, bin_data):
+    '''
+    Inputs: point_data [ (seq, RSSI, dist, lat, long), ... ],
+    bin_data { (x,y): (dist, PRR), ... }
+    Reports concentric bin data
+    '''
 
+    # make bins
 
-def report_grid_data(data):
-    sum = 0
-    for v in data.values():
-        sum += v[1] # / v[0] ** 2
-    # print('Mean PRR / d^2: {}'.format(sum / len(data)))
-    print('Mean PRR: {}'.format(sum / len(data)))
+    RSSIs, PRRs = [], []
+    for i in range(0, MAX_DIST, BIN_RADIUS):
+        RSSIs.append([])
+        PRRs.append([])
+   
+    # put RSSI and PRR in concentric bins 
+    #    
+    for i in range(len(RSSIs)):
+
+        for p in point_data:
+            if i * BIN_RADIUS <= p[2] and p[2] < (i+1) * BIN_RADIUS and p[1] != DROPPED_RSSI:
+                RSSIs[i].append(p[1])
+        
+        for d in bin_data.values():
+            if i * BIN_RADIUS <= d[0] and d[0] < (i+1) * BIN_RADIUS:
+                PRRs[i].append(d[1])
+
+    # print report
+
+    for i in range(len(RSSIs)):
+        if len(RSSIs[i]) == 0 or len(PRRs) == 0: continue
+        print(f'{i * BIN_RADIUS} <= Radius < {(i+1) * BIN_RADIUS}')
+        print(f'Mean RSSI: {sum(RSSIs[i]) / len(RSSIs[i])}')
+        print(f'Mean PRR: {sum(PRRs[i]) / len(PRRs[i])}\n')
 
 
 if __name__ == '__main__':
@@ -265,20 +285,17 @@ if __name__ == '__main__':
 
     for a in sys.argv[1:]:
 
-        if not m: print('\n', *exp[int(a)], '\n')
         BASE = exp[int(a)][1]
 
         d = combine_data(*exp[int(a)])
-        if not m: report_data(d)
-
         g = grid(d)
-        if not m: report_grid_data(g)
+
+        if not m:
+            print(f'\n{exp[int(a)]}\n')
+            report(d, g)
 
         if not r: map(d, g)
 
-    # report grid data only for bins present in all experiments
-
-    if not m: print()
     plt.show(block=True)
   
 
