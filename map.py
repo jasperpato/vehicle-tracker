@@ -11,6 +11,7 @@ RSSI_LIMITS = (-120, -50)
 PRR_LIMITS = (0.4, 1)
 
 MAX_DIST = 300
+MIN_LAT = -31.9828 # this chops off losts of dropped packets in 24-04 Cameron 8 20
 
 LEFT, TOP, RIGHT, BOTTOM = 115.814, -31.976, 115.822, -31.986 # map bounds
 NUM_SQUARES = 40 # number of square lengths along each axis
@@ -25,7 +26,7 @@ COORDS = {
 
 
 def usage():
-    print('Usage: python3 map.py *experiment_number(s)')
+    print('Usage: python3 map.py [-m] [-r] *experiment_number(s)')
     print('eg. python3 map.py 1 4')
 
 
@@ -99,12 +100,10 @@ def combine_data(date, location, sf, tx):
 
         if not found: rssi = DROPPED_RSSI
         dist = distance.distance( base, (lat, long) ).m
+
+        if dist > MAX_DIST or lat < MIN_LAT: continue
+
         data.append( (seq, rssi, dist, lat, long) )
-
-    # find and delete outliers
-
-    for i, d in enumerate(data):
-        if d[2] > MAX_DIST: data.pop(i)
 
     return data
 
@@ -121,7 +120,7 @@ def grid(data):
     '''
     Groups points into a grid of bins and calculates aggregate data for each bin.
     Input: list of points [ (seq, RSSI, dist, long, lat), ... ]
-    Output: dict of bins { (bottom, left): (meanRSSI, meanDist, PRR) }
+    Output: dict of bins { (bottom, left): (meanDist, PRR) }
     '''
     bins = {}
     for i in range(NUM_SQUARES):
@@ -140,14 +139,17 @@ def grid(data):
                 bins[(x,y)].append((l[1], l[2]))
                 break
 
-    # aggregate bin data
+    # remove empty bins
+
     remove = []
     for (x, y), bin_data in bins.items():
-        
         if len(bin_data) == 0:
             remove.append((x,y))
-            continue
+    for r in remove: bins.pop(r) 
 
+    # aggregate bin data
+    
+    for (x, y), bin_data in bins.items():
         RSSIsum, distSum, dropped = 0, 0, 0
 
         for d in bin_data:
@@ -159,12 +161,10 @@ def grid(data):
 
         l = len(bin_data)
 
-        if l - dropped == 0: meanRSSI = -999
+        if l - dropped == 0: meanRSSI = DROPPED_RSSI
         else: meanRSSI = RSSIsum / (l - dropped)
 
-        bins[(x,y)] = (meanRSSI, distSum / l, 1 - dropped / l)
-
-    for r in remove: bins.pop(r) 
+        bins[(x,y)] = (distSum / l, 1 - dropped / l)
 
     return bins
 
@@ -200,7 +200,7 @@ def map(data, grid_data):
     # grid
 
     for (x,y), d in grid_data.items():
-        c = color(d[2], PRR_LIMITS)
+        c = color(d[1], PRR_LIMITS)
         p = plt.Rectangle((x,y), WIDTH, HEIGHT, color=c, alpha = 0.5)
         ax.add_patch(p)
 
@@ -223,9 +223,30 @@ def map(data, grid_data):
     gdf.plot(ax=ax, color='blue', markersize=20)
 
 
+def report_data(data):
+    sum, num = 0, 0
+    for d in data:
+        if d[1] != DROPPED_RSSI:
+            sum += d[1] # / d[2] ** 2
+            num += 1
+    # print('Mean RSSI / d^2: {}'.format(sum / num))
+    print('Mean RSSI: {}'.format(sum / num))
+
+
+def report_grid_data(data):
+    sum = 0
+    for v in data.values():
+        sum += v[1] # / v[0] ** 2
+    # print('Mean PRR / d^2: {}'.format(sum / len(data)))
+    print('Mean PRR: {}'.format(sum / len(data)))
+
+
 if __name__ == '__main__':
     '''
-    Usage: python3 map.py *experiment_number(s)
+    Usage: python3 map.py [-m] [-r] *experiment_number(s)
+    [-m] for only mapping
+    [-r] for only reporting
+    Default is mapping and reporting.
     '''
 
     exp = {
@@ -237,12 +258,27 @@ if __name__ == '__main__':
         6: ('24-04', 'Cameron', 8, 20),
     }
 
+    m = sys.argv[1] == '-m'
+    r = sys.argv[1] == '-r'
+    if sys.argv[1] == '-m' or sys.argv[1] == '-r':
+        sys.argv.pop(1)
+
     for a in sys.argv[1:]:
+
+        if not m: print('\n', *exp[int(a)], '\n')
         BASE = exp[int(a)][1]
-        data = combine_data(*exp[int(a)])
-        grid_data = grid(data)
-        map(data, grid_data)
-    
+
+        d = combine_data(*exp[int(a)])
+        if not m: report_data(d)
+
+        g = grid(d)
+        if not m: report_grid_data(g)
+
+        if not r: map(d, g)
+
+    # report grid data only for bins present in all experiments
+
+    if not m: print()
     plt.show(block=True)
   
 
