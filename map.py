@@ -1,31 +1,40 @@
 import geopandas as gpds
 from geopy import distance
 import matplotlib.pyplot as plt
-from matplotlib import patches
 from shapely.geometry import Point
 import sys
 
 
+# base coordinates
+
+COORDS = {
+  'Cameron': (-31.980937, 115.819665),
+  'Reid': (-31.979143,115.818025)
+}
+
 DROPPED_RSSI = -999
+
+# for coloring
 
 RSSI_LIMITS = (-120, -50)
 PRR_LIMITS = (0.4, 1)
 
-MAX_DIST = 300
-MIN_LAT = -31.9828 # this chops off losts of dropped packets in 24-04 Cameron 8 20
+# remove false GPS readings
+
+MAX_DIST = 600
+MIN_LAT, MAX_LAT = -31.9828, -31.9776
+MIN_LONG, MAX_LONG = 115.816, 115.821
+
+# for tiling
 
 LEFT, TOP, RIGHT, BOTTOM = 115.814, -31.976, 115.822, -31.986 # map bounds
 NUM_SQUARES = 40 # number of square lengths along each axis
 
 WIDTH, HEIGHT = (RIGHT-LEFT) / NUM_SQUARES, (TOP - BOTTOM) / NUM_SQUARES
 
-BIN_RADIUS = 30
+# for concentric binning
 
-BASE = ''
-COORDS = {
-  'Cameron': (-31.980937, 115.819665),
-  'Reid': (-31.979143,115.818025)
-}
+BIN_RADIUS = 30
 
 
 def usage():
@@ -58,7 +67,7 @@ def combine_data(date, location, sf, tx):
     receiver = r.readlines()
     skip = False
 
-    for i, l in enumerate(s.readlines()):
+    for l in s.readlines():
 
         # skip over comments in csv file (''' and #)
         if l == "'''\n" and not skip:
@@ -79,9 +88,11 @@ def combine_data(date, location, sf, tx):
         found = False
 
         # find matching receiver data
+
         for rl in receiver:
 
             # skip over comments in csv file (''' and #)
+
             if l.strip() == "'''\n" and not r_skip:
                 r_skip = True
                 continue
@@ -104,7 +115,7 @@ def combine_data(date, location, sf, tx):
         if not found: rssi = DROPPED_RSSI
         dist = distance.distance( base, (lat, long) ).m
 
-        if dist > MAX_DIST or lat < MIN_LAT: continue
+        if dist > MAX_DIST or lat < MIN_LAT or lat > MAX_LAT or long < MIN_LONG or long > MAX_LONG: continue
 
         data.append( (seq, rssi, dist, lat, long) )
 
@@ -125,6 +136,7 @@ def grid(data):
     Input: list of points [ (seq, RSSI, dist, long, lat), ... ]
     Output: dict of bins { (bottom, left): (meanDist, PRR) }
     '''
+
     bins = {}
     for i in range(NUM_SQUARES):
         x = LEFT + WIDTH * i
@@ -133,6 +145,7 @@ def grid(data):
             bins[(x,y)] = []
 
     # sort data into bins
+
     for l in data:
         for (x, y) in bins.keys():
 
@@ -153,20 +166,13 @@ def grid(data):
     # aggregate bin data
     
     for (x, y), bin_data in bins.items():
-        RSSIsum, distSum, dropped = 0, 0, 0
+        distSum, dropped = 0, 0
 
         for d in bin_data:
-
             if d[0] == DROPPED_RSSI: dropped += 1
-            else: RSSIsum += d[0]
-            
             distSum += d[1]
 
         l = len(bin_data)
-
-        if l - dropped == 0: meanRSSI = DROPPED_RSSI
-        else: meanRSSI = RSSIsum / (l - dropped)
-
         bins[(x,y)] = (distSum / l, 1 - dropped / l)
 
     return bins
@@ -183,20 +189,18 @@ def color(r, lim):
     return '#{:02X}{:02X}00'.format(red, green)
 
 
-def map(data, grid_data):
+def map(data, grid_data, base, title):
     '''
     Input: list of points [ (seq, RSSI, dist, long, lat), ... ]
     Plots data points color-coded by signal strength, and aggregated data squares color-coded by PRR.
     '''
 
-    _, ax = plt.subplots(figsize=(5,7))
+    fig, ax = plt.subplots(figsize=(6,9))
+    plt.title(title)
 
     # background map
 
-    for name, col in [
-        ('roads-line', 'darkgrey'),
-        ('buildings-polygon', 'grey'),
-    ]:
+    for name, col in [ ('roads-line', 'darkgrey'), ('buildings-polygon', 'grey') ]:
         shp = gpds.read_file(f'mygeodata/map/{name}.shp')
         shp.plot(ax=ax, color=col, zorder=-1)
 
@@ -220,8 +224,8 @@ def map(data, grid_data):
 
     # base station coordinate
 
-    base = Point( COORDS[BASE][1], COORDS[BASE][0] )
-    c = { 'geometry': [ base ] }
+    b = Point( COORDS[base][1], COORDS[base][0] )
+    c = { 'geometry': [ b ] }
     gdf = gpds.GeoDataFrame(c, crs='EPSG:4326')
     gdf.plot(ax=ax, color='blue', markersize=20)
 
@@ -241,7 +245,7 @@ def report(point_data, bin_data):
         PRRs.append([])
    
     # put RSSI and PRR in concentric bins 
-    #    
+    
     for i in range(len(RSSIs)):
 
         for p in point_data:
@@ -255,7 +259,7 @@ def report(point_data, bin_data):
     # print report
 
     for i in range(len(RSSIs)):
-        if len(RSSIs[i]) == 0 or len(PRRs) == 0: continue
+        if len(RSSIs[i]) == 0 or len(PRRs[i]) == 0: continue
         print(f'{i * BIN_RADIUS} <= distance < {(i+1) * BIN_RADIUS}')
         print(f'Mean RSSI: {sum(RSSIs[i]) / len(RSSIs[i])}')
         print(f'Mean PRR: {sum(PRRs[i]) / len(PRRs[i])}\n')
@@ -288,16 +292,17 @@ if __name__ == '__main__':
 
     for a in (range(1,7) if all else sys.argv[1:]):
 
-        BASE = exp[int(a)][1]
+        date, base, sf, tx = exp[int(a)]
+        title = f'{date} {base} SF{sf} TX{tx}'
 
-        d = combine_data(*exp[int(a)])
+        d = combine_data(date, base, sf, tx)
         g = grid(d)
 
         if not m:
-            print(f'\n{exp[int(a)]}\n')
+            print(f'{title}\n')
             report(d, g)
 
-        if not r: map(d, g)
+        if not r: map(d, g, base, title)
 
     plt.show(block=True)
   
