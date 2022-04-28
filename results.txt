@@ -1,333 +1,39 @@
 
-24-04 Reid SF7 TX13
+                SF7 TX13  SF7 TX18  SF8 TX20 
 
-0 <= distance < 30
-Data points: 58
-Mean RSSI: -79.0000
-PRR: 1.0000
+  0 <= r <  30:  -81.76    -78.60    -85.71  
+                 1.0000    1.0000    1.0000  
 
-30 <= distance < 60
-Data points: 145
-Mean RSSI: -92.7483
-PRR: 0.9862
+ 30 <= r <  60:  -93.59    -92.96    -92.28  
+                 0.9913    0.9829    0.9825  
 
-60 <= distance < 90
-Data points: 203
-Mean RSSI: -100.7711
-PRR: 0.9901
+ 60 <= r <  90: -100.84    -97.11    -99.74  
+                 0.9938    0.9762    0.9709  
 
-90 <= distance < 120
-Data points: 257
-Mean RSSI: -104.6609
-PRR: 0.9066
+ 90 <= r < 120: -104.44   -103.78   -105.57  
+                 0.9284    0.9764    0.8860  
 
-120 <= distance < 150
-Data points: 226
-Mean RSSI: -107.9274
-PRR: 0.7920
+120 <= r < 150: -107.31   -104.91   -104.05  
+                 0.8552    0.9329    0.9042  
 
-150 <= distance < 180
-Data points: 185
-Mean RSSI: -108.3333
-PRR: 0.5514
+150 <= r < 180: -108.61   -106.36   -107.73  
+                 0.6762    0.6973    0.7595  
 
-180 <= distance < 210
-Data points: 82
-Mean RSSI: -99.4429
-PRR: 0.8537
+180 <= r < 210: -107.43   -105.71   -112.15  
+                 0.8465    0.6929    0.5764  
 
-210 <= distance < 240
-Data points: 40
-Mean RSSI: -103.6111
-PRR: 0.9000
+210 <= r < 240: -108.31   -108.80   -111.31  
+                 0.7986    0.7603    0.9425  
 
+240 <= r < 270: -110.00   -109.74   -111.83  
+                 0.9512    0.9346    0.8272  
 
-24-04 Reid SF7 TX18
+270 <= r < 300: -111.00   -112.26   -113.47  
+                 0.9000    0.8919    0.8475  
 
-0 <= distance < 30
-Data points: 78
-Mean RSSI: -78.6026
-PRR: 1.0000
+300 <= r < 330: -112.23   -111.58   -112.78  
+                 0.8784    0.9429    0.7826  
 
-30 <= distance < 60
-Data points: 67
-Mean RSSI: -88.0758
-PRR: 0.9851
-
-60 <= distance < 90
-Data points: 188
-Mean RSSI: -97.0328
-PRR: 0.9734
-
-90 <= distance < 120
-Data points: 152
-Mean RSSI: -102.7347
-PRR: 0.9671
-
-120 <= distance < 150
-Data points: 152
-Mean RSSI: -103.5821
-PRR: 0.8816
-
-150 <= distance < 180
-Data points: 147
-Mean RSSI: -103.4156
-PRR: 0.5238
-
-180 <= distance < 210
-Data points: 279
-Mean RSSI: -103.4324
-PRR: 0.6631
-
-210 <= distance < 240
-Data points: 68
-Mean RSSI: -108.6727
-PRR: 0.8088
-
-240 <= distance < 270
-Data points: 64
-Mean RSSI: -109.1167
-PRR: 0.9375
-
-270 <= distance < 300
-Data points: 27
-Mean RSSI: -113.7500
-PRR: 0.8889
-
-
-24-04 Reid SF8 TX20
-
-0 <= distance < 30
-Data points: 48
-Mean RSSI: -85.7083
-PRR: 1.0000
-
-30 <= distance < 60
-Data points: 132
-Mean RSSI: -90.9847
-PRR: 0.9924
-
-60 <= distance < 90
-Data points: 272
-Mean RSSI: -98.8479
-PRR: 0.9669
-
-90 <= distance < 120
-Data points: 144
-Mean RSSI: -104.1288
-PRR: 0.9167
-
-120 <= distance < 150
-Data points: 193
-Mean RSSI: -101.2712
-PRR: 0.9171
-
-150 <= distance < 180
-Data points: 129
-Mean RSSI: -106.5542
-PRR: 0.6434
-
-180 <= distance < 210
-Data points: 179
-Mean RSSI: -111.6040
-PRR: 0.5642
-
-210 <= distance < 240
-Data points: 44
-Mean RSSI: -112.5500
-PRR: 0.9091
-
-240 <= distance < 270
-Data points: 46
-Mean RSSI: -113.1714
-PRR: 0.7609
-
-270 <= distance < 300
-Data points: 41
-Mean RSSI: -114.4545
-PRR: 0.8049
-
-300 <= distance < 330
-Data points: 2
-Mean RSSI: -116.0000
-PRR: 0.5000
-
-
-24-04 Cameron SF7 TX13
-
-0 <= distance < 30
-Data points: 39
-Mean RSSI: -85.8718
-PRR: 1.0000
-
-30 <= distance < 60
-Data points: 85
-Mean RSSI: -95.0353
-PRR: 1.0000
-
-60 <= distance < 90
-Data points: 117
-Mean RSSI: -100.9487
-PRR: 1.0000
-
-90 <= distance < 120
-Data points: 78
-Mean RSSI: -103.7308
-PRR: 1.0000
-
-120 <= distance < 150
-Data points: 140
-Mean RSSI: -106.3209
-PRR: 0.9571
-
-150 <= distance < 180
-Data points: 130
-Mean RSSI: -109.0090
-PRR: 0.8538
-
-180 <= distance < 210
-Data points: 146
-Mean RSSI: -111.9187
-PRR: 0.8425
-
-210 <= distance < 240
-Data points: 99
-Mean RSSI: -110.2133
-PRR: 0.7576
-
-240 <= distance < 270
-Data points: 41
-Mean RSSI: -110.0000
-PRR: 0.9512
-
-270 <= distance < 300
-Data points: 50
-Mean RSSI: -111.0000
-PRR: 0.9000
-
-300 <= distance < 330
-Data points: 74
-Mean RSSI: -112.2308
-PRR: 0.8784
-
-330 <= distance < 360
-Data points: 47
-Mean RSSI: -112.4242
-PRR: 0.7021
-
-
-24-04 Cameron SF7 TX18
-
-30 <= distance < 60
-Data points: 108
-Mean RSSI: -95.9906
-PRR: 0.9815
-
-60 <= distance < 90
-Data points: 22
-Mean RSSI: -97.7273
-PRR: 1.0000
-
-90 <= distance < 120
-Data points: 145
-Mean RSSI: -104.8811
-PRR: 0.9862
-
-120 <= distance < 150
-Data points: 176
-Mean RSSI: -106.0640
-PRR: 0.9773
-
-150 <= distance < 180
-Data points: 147
-Mean RSSI: -109.2969
-PRR: 0.8707
-
-180 <= distance < 210
-Data points: 115
-Mean RSSI: -111.2273
-PRR: 0.7652
-
-210 <= distance < 240
-Data points: 53
-Mean RSSI: -108.9730
-PRR: 0.6981
-
-240 <= distance < 270
-Data points: 43
-Mean RSSI: -110.6750
-PRR: 0.9302
-
-270 <= distance < 300
-Data points: 10
-Mean RSSI: -108.2222
-PRR: 0.9000
-
-300 <= distance < 330
-Data points: 35
-Mean RSSI: -111.5758
-PRR: 0.9429
-
-330 <= distance < 360
-Data points: 71
-Mean RSSI: -111.8947
-PRR: 0.8028
-
-
-24-04 Cameron SF8 TX20
-
-30 <= distance < 60
-Data points: 96
-Mean RSSI: -94.0645
-PRR: 0.9688
-
-60 <= distance < 90
-Data points: 106
-Mean RSSI: -102.0192
-PRR: 0.9811
-
-90 <= distance < 120
-Data points: 84
-Mean RSSI: -108.0286
-PRR: 0.8333
-
-120 <= distance < 150
-Data points: 141
-Mean RSSI: -107.8560
-PRR: 0.8865
-
-150 <= distance < 180
-Data points: 133
-Mean RSSI: -108.8707
-PRR: 0.8722
-
-180 <= distance < 210
-Data points: 135
-Mean RSSI: -112.8750
-PRR: 0.5926
-
-210 <= distance < 240
-Data points: 43
-Mean RSSI: -110.0476
-PRR: 0.9767
-
-240 <= distance < 270
-Data points: 35
-Mean RSSI: -110.0625
-PRR: 0.9143
-
-270 <= distance < 300
-Data points: 18
-Mean RSSI: -111.2353
-PRR: 0.9444
-
-300 <= distance < 330
-Data points: 21
-Mean RSSI: -112.4706
-PRR: 0.8095
-
-330 <= distance < 360
-Data points: 73
-Mean RSSI: -113.4082
-PRR: 0.6712
+330 <= r < 360: -112.42   -111.89   -113.41  
+                 0.7021    0.8028    0.6712  
 

@@ -38,7 +38,7 @@ BIN_RADIUS = 30
 
 
 def usage():
-    print('Usage: python3 map.py [-m] [-r] *experiment_number(s)')
+    print('Usage: python3 map.py [-m mapping only] [-r reporting only] *experiment_number(s)')
     print('eg. python3 map.py 1 4')
 
 
@@ -246,13 +246,6 @@ def radius_intervals(point_data):
             bins[i][3] = RSSIsum / (num - dropped) if (num - dropped) else DROPPED_RSSI
             bins[i][4] = 1 - dropped / num
 
-    # remove intervals with no data points
-
-    new_bins = []
-    for i, b in enumerate(bins):
-        if b[2]: new_bins.append(b)
-    bins = new_bins
-
     # cast data to tuple
 
     for i, b in enumerate(bins): bins[i] = tuple(b)
@@ -260,23 +253,9 @@ def radius_intervals(point_data):
     return tuple(bins)
 
 
-def report(radius_data):
-    '''
-    Prints num_datapoints, mean RSSI and PRR for each radius interval in radius_data
-    '''
-    for r in radius_data:
-        print(f'{r[0]} <= distance < {r[1]}')
-        print('Data points: {}'.format(r[2]))
-        print('Mean RSSI: {:0.4f}'.format(r[3]))
-        print('PRR: {:0.4f}\n'.format(r[4]))
-
-
 if __name__ == '__main__':
     '''
-    Usage: python3 map.py [-m] [-r] [--all] *experiment_number(s)
-    [-m] for only mapping
-    [-r] for only reporting
-    Default is mapping and reporting.
+    Usage: python3 map.py [-m mapping only] [-r reporting only] [--all] *experiment_number(s)
     '''
 
     exp = [
@@ -296,11 +275,15 @@ if __name__ == '__main__':
         sys.argv.pop(1)
 
     all = False
-    if sys.argv[1] == '--all': all = True
+    if len(sys.argv) > 1: all = sys.argv[1] == '--all'
 
+    # store radial data for comparison
+
+    param_data = [[], [], [], [], [], []]
+    
     #loop through datasets
 
-    for a in (range(6) if all else sys.argv[1:]):
+    for a in (sys.argv[1:] if m else range(6)):
 
         date, base, sf, tx = exp[int(a)]
         title = f'{date} {base} SF{sf} TX{tx}'
@@ -308,11 +291,62 @@ if __name__ == '__main__':
         point_data = combine_data(date, base, sf, tx)
         grid_data = grid(point_data)
 
-        if not m:
-            print(f'\n{title}\n')
-            radius_data = radius_intervals(point_data)
-            report(radius_data)
+        radius_data = radius_intervals(point_data)
 
-        if not r: map(point_data, grid_data, base, title)
+        # store radial data for comparison
+
+        if not m:
+            for d in radius_data: param_data[int(a)].append(d)
+
+        if not r and (all or str(a) in sys.argv[1:]): map(point_data, grid_data, base, title)
+
+    # group data with same params from each experiment and compare parameter sets
+
+    if not m:
+        param_results = [[], [], []]
+
+        # for each parameter set
+
+        for i in range(3):
+            
+            # for each radius interval
+
+            for j in range(MAX_DIST // BIN_RADIUS):
+                r1, r2, num1, rssi1, prr1 = param_data[i][j]
+                num2, rssi2, prr2 = param_data[i+3][j][2:]
+
+                # consider radius intervals coontaining no data points
+
+                if not num1:
+                    if not num2:
+                        param_results[i].append(())
+                        continue
+                    param_results[i].append(param_data[i+3][j])
+                    continue
+                if not num2:
+                    param_results[i].append(param_data[i][j])
+                    continue
+
+                meanRSSI = (rssi1 * num1 + rssi2 * num2) / (num1 + num2)
+                meanPRR = 1 - ((1 - prr1) * num1 + (1 - prr2) * num2) / (num1 + num2)
+                param_results[i].append((r1, r2, num1+num2, meanRSSI, meanPRR))
+
+        # compare parameter sets at each radius
+
+        print('\n' + 15 * ' ', end='')
+        print(" SF7 TX13  SF7 TX18  SF8 TX20 ")
+        for j in range(MAX_DIST // BIN_RADIUS):
+            if not param_results[0][j] and not param_results[1][j] and not param_results[2][j]: continue
+            print()
+            print(f'{j * BIN_RADIUS:3} <= r < {(j+1) * BIN_RADIUS:3}:', end = '')
+            for i in range(3):
+                if param_results[i][j]: print(f' {param_results[i][j][3]:7.02f}  ', end = '')
+                else: print(' ' * 10)
+            print('\n' + 15 * ' ', end='')
+            for i in range(3):
+                if param_results[i][j]: print(f'  {param_results[i][j][4]:5.04f}  ', end='')
+                else: print(' ' * 10)
+            print()
+        print()
 
     plt.show(block=True)
