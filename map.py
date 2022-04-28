@@ -1,7 +1,7 @@
-import geopandas as gpds
-from geopy import distance
-import matplotlib.pyplot as plt
-from shapely.geometry import Point
+import geopandas as gpds # https://geopandas.org/en/stable/
+from geopy import distance # https://github.com/geopy/geopy
+import matplotlib.pyplot as plt # https://matplotlib.org/
+from shapely.geometry import Point # https://github.com/shapely/shapely
 import sys
 
 
@@ -305,6 +305,3 @@ if __name__ == '__main__':
         if not r: map(d, g, base, title)
 
     plt.show(block=True)
-  
-
-  
