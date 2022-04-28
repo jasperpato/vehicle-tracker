@@ -1,260 +1,333 @@
+
 24-04 Reid SF7 TX13
 
 0 <= distance < 30
-Mean RSSI: -79.0
-Mean PRR: 1.0
+Data points: 58
+Mean RSSI: -79.0000
+PRR: 1.0000
 
 30 <= distance < 60
-Mean RSSI: -92.74825174825175
-Mean PRR: 1.0
+Data points: 145
+Mean RSSI: -92.7483
+PRR: 0.9862
 
 60 <= distance < 90
-Mean RSSI: -100.77114427860697
-Mean PRR: 0.9723801285219971
+Data points: 203
+Mean RSSI: -100.7711
+PRR: 0.9901
 
 90 <= distance < 120
-Mean RSSI: -104.66094420600858
-Mean PRR: 0.9450708711578276
+Data points: 257
+Mean RSSI: -104.6609
+PRR: 0.9066
 
 120 <= distance < 150
-Mean RSSI: -107.92737430167598
-Mean PRR: 0.7845299902118085
+Data points: 226
+Mean RSSI: -107.9274
+PRR: 0.7920
 
 150 <= distance < 180
-Mean RSSI: -108.33333333333333
-Mean PRR: 0.6069958182703281
+Data points: 185
+Mean RSSI: -108.3333
+PRR: 0.5514
 
 180 <= distance < 210
-Mean RSSI: -99.44285714285714
-Mean PRR: 0.8428571428571429
+Data points: 82
+Mean RSSI: -99.4429
+PRR: 0.8537
 
 210 <= distance < 240
-Mean RSSI: -103.61111111111111
-Mean PRR: 0.9352678571428572
+Data points: 40
+Mean RSSI: -103.6111
+PRR: 0.9000
+
 
 24-04 Reid SF7 TX18
 
 0 <= distance < 30
-Mean RSSI: -78.6025641025641
-Mean PRR: 0.986842105263158
+Data points: 78
+Mean RSSI: -78.6026
+PRR: 1.0000
 
 30 <= distance < 60
-Mean RSSI: -88.07575757575758
-Mean PRR: 1.0
+Data points: 67
+Mean RSSI: -88.0758
+PRR: 0.9851
 
 60 <= distance < 90
-Mean RSSI: -97.0327868852459
-Mean PRR: 0.9682317682317683
+Data points: 188
+Mean RSSI: -97.0328
+PRR: 0.9734
 
 90 <= distance < 120
-Mean RSSI: -102.73469387755102
-Mean PRR: 0.9614285714285714
+Data points: 152
+Mean RSSI: -102.7347
+PRR: 0.9671
 
 120 <= distance < 150
-Mean RSSI: -103.58208955223881
-Mean PRR: 0.8919795482295483
+Data points: 152
+Mean RSSI: -103.5821
+PRR: 0.8816
 
 150 <= distance < 180
-Mean RSSI: -103.41558441558442
-Mean PRR: 0.5587095444238303
+Data points: 147
+Mean RSSI: -103.4156
+PRR: 0.5238
 
 180 <= distance < 210
-Mean RSSI: -103.43243243243244
-Mean PRR: 0.7275285342676646
+Data points: 279
+Mean RSSI: -103.4324
+PRR: 0.6631
 
 210 <= distance < 240
-Mean RSSI: -108.67272727272727
-Mean PRR: 0.8567927170868348
+Data points: 68
+Mean RSSI: -108.6727
+PRR: 0.8088
 
 240 <= distance < 270
-Mean RSSI: -109.11666666666666
-Mean PRR: 0.9265567765567765
+Data points: 64
+Mean RSSI: -109.1167
+PRR: 0.9375
 
 270 <= distance < 300
-Mean RSSI: -113.75
-Mean PRR: 0.9722222222222222
+Data points: 27
+Mean RSSI: -113.7500
+PRR: 0.8889
+
 
 24-04 Reid SF8 TX20
 
 0 <= distance < 30
-Mean RSSI: -85.70833333333333
-Mean PRR: 1.0
+Data points: 48
+Mean RSSI: -85.7083
+PRR: 1.0000
 
 30 <= distance < 60
-Mean RSSI: -90.98473282442748
-Mean PRR: 0.9777777777777777
+Data points: 132
+Mean RSSI: -90.9847
+PRR: 0.9924
 
 60 <= distance < 90
-Mean RSSI: -98.84790874524715
-Mean PRR: 0.9806003787878789
+Data points: 272
+Mean RSSI: -98.8479
+PRR: 0.9669
 
 90 <= distance < 120
-Mean RSSI: -104.12878787878788
-Mean PRR: 0.9247497294372294
+Data points: 144
+Mean RSSI: -104.1288
+PRR: 0.9167
 
 120 <= distance < 150
-Mean RSSI: -101.27118644067797
-Mean PRR: 0.9287037037037037
+Data points: 193
+Mean RSSI: -101.2712
+PRR: 0.9171
 
 150 <= distance < 180
-Mean RSSI: -106.55421686746988
-Mean PRR: 0.5889538239538241
+Data points: 129
+Mean RSSI: -106.5542
+PRR: 0.6434
 
 180 <= distance < 210
-Mean RSSI: -111.60396039603961
-Mean PRR: 0.5673947264856355
+Data points: 179
+Mean RSSI: -111.6040
+PRR: 0.5642
 
 210 <= distance < 240
-Mean RSSI: -112.55
-Mean PRR: 0.9484126984126985
+Data points: 44
+Mean RSSI: -112.5500
+PRR: 0.9091
 
 240 <= distance < 270
-Mean RSSI: -113.17142857142858
-Mean PRR: 0.7873376623376623
+Data points: 46
+Mean RSSI: -113.1714
+PRR: 0.7609
 
 270 <= distance < 300
-Mean RSSI: -114.45454545454545
-Mean PRR: 0.8163780663780663
+Data points: 41
+Mean RSSI: -114.4545
+PRR: 0.8049
+
+300 <= distance < 330
+Data points: 2
+Mean RSSI: -116.0000
+PRR: 0.5000
+
 
 24-04 Cameron SF7 TX13
 
 0 <= distance < 30
-Mean RSSI: -85.87179487179488
-Mean PRR: 1.0
+Data points: 39
+Mean RSSI: -85.8718
+PRR: 1.0000
 
 30 <= distance < 60
-Mean RSSI: -95.03529411764706
-Mean PRR: 1.0
+Data points: 85
+Mean RSSI: -95.0353
+PRR: 1.0000
 
 60 <= distance < 90
-Mean RSSI: -100.94871794871794
-Mean PRR: 1.0
+Data points: 117
+Mean RSSI: -100.9487
+PRR: 1.0000
 
 90 <= distance < 120
-Mean RSSI: -103.73076923076923
-Mean PRR: 1.0
+Data points: 78
+Mean RSSI: -103.7308
+PRR: 1.0000
 
 120 <= distance < 150
-Mean RSSI: -106.32089552238806
-Mean PRR: 0.9500541125541125
+Data points: 140
+Mean RSSI: -106.3209
+PRR: 0.9571
 
 150 <= distance < 180
-Mean RSSI: -109.009009009009
-Mean PRR: 0.8246012759170654
+Data points: 130
+Mean RSSI: -109.0090
+PRR: 0.8538
 
 180 <= distance < 210
-Mean RSSI: -111.91869918699187
-Mean PRR: 0.8417832167832167
+Data points: 146
+Mean RSSI: -111.9187
+PRR: 0.8425
 
 210 <= distance < 240
-Mean RSSI: -110.21333333333334
-Mean PRR: 0.8007575757575758
+Data points: 99
+Mean RSSI: -110.2133
+PRR: 0.7576
 
 240 <= distance < 270
-Mean RSSI: -110.0
-Mean PRR: 0.955592105263158
+Data points: 41
+Mean RSSI: -110.0000
+PRR: 0.9512
 
 270 <= distance < 300
-Mean RSSI: -111.0
-Mean PRR: 0.9068181818181819
+Data points: 50
+Mean RSSI: -111.0000
+PRR: 0.9000
 
 300 <= distance < 330
-Mean RSSI: -112.23076923076923
-Mean PRR: 0.8524409763905563
+Data points: 74
+Mean RSSI: -112.2308
+PRR: 0.8784
 
 330 <= distance < 360
-Mean RSSI: -112.42424242424242
-Mean PRR: 0.8095959595959595
+Data points: 47
+Mean RSSI: -112.4242
+PRR: 0.7021
+
 
 24-04 Cameron SF7 TX18
 
 30 <= distance < 60
-Mean RSSI: -95.99056603773585
-Mean PRR: 0.9471830985915493
+Data points: 108
+Mean RSSI: -95.9906
+PRR: 0.9815
 
 60 <= distance < 90
-Mean RSSI: -97.72727272727273
-Mean PRR: 1.0
+Data points: 22
+Mean RSSI: -97.7273
+PRR: 1.0000
 
 90 <= distance < 120
-Mean RSSI: -104.88111888111888
-Mean PRR: 0.9898459383753501
+Data points: 145
+Mean RSSI: -104.8811
+PRR: 0.9862
 
 120 <= distance < 150
-Mean RSSI: -106.06395348837209
-Mean PRR: 0.9597338935574229
+Data points: 176
+Mean RSSI: -106.0640
+PRR: 0.9773
 
 150 <= distance < 180
-Mean RSSI: -109.296875
-Mean PRR: 0.8964760729466612
+Data points: 147
+Mean RSSI: -109.2969
+PRR: 0.8707
 
 180 <= distance < 210
-Mean RSSI: -111.22727272727273
-Mean PRR: 0.8002004168670837
+Data points: 115
+Mean RSSI: -111.2273
+PRR: 0.7652
 
 210 <= distance < 240
-Mean RSSI: -108.97297297297297
-Mean PRR: 0.75
+Data points: 53
+Mean RSSI: -108.9730
+PRR: 0.6981
 
 240 <= distance < 270
-Mean RSSI: -110.675
-Mean PRR: 0.9217171717171717
+Data points: 43
+Mean RSSI: -110.6750
+PRR: 0.9302
 
 270 <= distance < 300
-Mean RSSI: -108.22222222222223
-Mean PRR: 0.9375
+Data points: 10
+Mean RSSI: -108.2222
+PRR: 0.9000
 
 300 <= distance < 330
-Mean RSSI: -111.57575757575758
-Mean PRR: 0.7894736842105263
+Data points: 35
+Mean RSSI: -111.5758
+PRR: 0.9429
 
 330 <= distance < 360
-Mean RSSI: -111.89473684210526
-Mean PRR: 0.8452380952380953
+Data points: 71
+Mean RSSI: -111.8947
+PRR: 0.8028
+
 
 24-04 Cameron SF8 TX20
 
 30 <= distance < 60
-Mean RSSI: -94.06451612903226
-Mean PRR: 0.9579545454545454
+Data points: 96
+Mean RSSI: -94.0645
+PRR: 0.9688
 
 60 <= distance < 90
-Mean RSSI: -102.01923076923077
-Mean PRR: 0.9841269841269842
+Data points: 106
+Mean RSSI: -102.0192
+PRR: 0.9811
 
 90 <= distance < 120
-Mean RSSI: -108.02857142857142
-Mean PRR: 0.8984848484848484
+Data points: 84
+Mean RSSI: -108.0286
+PRR: 0.8333
 
 120 <= distance < 150
-Mean RSSI: -107.856
-Mean PRR: 0.9018833849329206
+Data points: 141
+Mean RSSI: -107.8560
+PRR: 0.8865
 
 150 <= distance < 180
-Mean RSSI: -108.87068965517241
-Mean PRR: 0.8146735209235209
+Data points: 133
+Mean RSSI: -108.8707
+PRR: 0.8722
 
 180 <= distance < 210
-Mean RSSI: -112.875
-Mean PRR: 0.5746498599439777
+Data points: 135
+Mean RSSI: -112.8750
+PRR: 0.5926
 
 210 <= distance < 240
-Mean RSSI: -110.04761904761905
-Mean PRR: 0.9292929292929294
+Data points: 43
+Mean RSSI: -110.0476
+PRR: 0.9767
 
 240 <= distance < 270
+Data points: 35
 Mean RSSI: -110.0625
-Mean PRR: 0.9379699248120301
+PRR: 0.9143
 
 270 <= distance < 300
-Mean RSSI: -111.23529411764706
-Mean PRR: 0.9583333333333333
+Data points: 18
+Mean RSSI: -111.2353
+PRR: 0.9444
 
 300 <= distance < 330
-Mean RSSI: -112.47058823529412
-Mean PRR: 0.7777777777777778
+Data points: 21
+Mean RSSI: -112.4706
+PRR: 0.8095
 
 330 <= distance < 360
-Mean RSSI: -113.40816326530613
-Mean PRR: 0.6886574074074074
+Data points: 73
+Mean RSSI: -113.4082
+PRR: 0.6712
 

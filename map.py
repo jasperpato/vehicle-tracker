@@ -49,11 +49,12 @@ def combine_data(date, location, sf, tx):
     Treats both missing and corrupted packets as dropped packets, with RSSI = DROPPED_RSSI.
     Cannot handle resets or any decreased or duplicated seq number in files.
     Skips Python block and line comments in files.
+    Assumes transmitter data is uncorrupted.
     Returns packet reception data as list of tuples (seq, RSSI, dist, lat, long).
     '''
 
     try:
-        n = f'data/{date}-{location.capitalize()}-SF{sf}-{tx}dBm-{{}}.csv'
+        n = f'data/{date}-{location}-SF{sf}-{tx}dBm-{{}}.csv'
         r = open(n.format('Receiver'), 'r')
         s = open(n.format('Sender'), 'r')
   
@@ -61,7 +62,7 @@ def combine_data(date, location, sf, tx):
         usage()
         return None
 
-    base = COORDS[location.capitalize()]
+    base = COORDS[location]
     data = []
   
     receiver = r.readlines()
@@ -70,6 +71,7 @@ def combine_data(date, location, sf, tx):
     for l in s.readlines():
 
         # skip over comments in csv file (''' and #)
+
         if l == "'''\n" and not skip:
             skip = True
             continue
@@ -103,8 +105,8 @@ def combine_data(date, location, sf, tx):
 
             try:
                 r_data = rl.split(',')
-                if len(r_data) != 14: continue
-                r_seq, rssi = int(r_data[1]), int(r_data[9])
+                if len(r_data) != 14: continue # corrupted if there is not 14 fields
+                r_seq, rssi = int(r_data[1]), int(r_data[9]) # corrupted if seq or rssi is not int
 
             except: pass
 
@@ -112,70 +114,58 @@ def combine_data(date, location, sf, tx):
                 found = True
                 break
 
-        if not found: rssi = DROPPED_RSSI
+        if not found: rssi = DROPPED_RSSI # never reached receiver
         dist = distance.distance( base, (lat, long) ).m
 
         if dist > MAX_DIST or lat < MIN_LAT or lat > MAX_LAT or long < MIN_LONG or long > MAX_LONG: continue
 
         data.append( (seq, rssi, dist, lat, long) )
 
-    return data
-
-
-def display(data):
-    '''
-    Prints data
-    '''
-    for l in data:
-        print(f'seq: {l[0]}, RSSI: {l[1]}, dist: {round(l[2], 4)}, loc: {(l[3], l[4])}')
+    return tuple(data)
 
 
 def grid(data):
     '''
-    Groups points into a grid of bins and calculates aggregate data for each bin.
+    Groups points into a grid of tiles and calculates PRR for each tile.
     Input: list of points [ (seq, RSSI, dist, long, lat), ... ]
-    Output: dict of bins { (bottom, left): (meanDist, PRR) }
+    Output: list of tile data: [ (bottom_lat, left_long, PRR), ... ]
     '''
 
-    bins = {}
+    # initialise tiles
+
+    tile = []
     for i in range(NUM_SQUARES):
         x = LEFT + WIDTH * i
         for j in range(NUM_SQUARES):
             y = BOTTOM + HEIGHT * j
-            bins[(x,y)] = []
+            tile.append([x, y, []])# left, bottom, list of RSSIs in tile
 
-    # sort data into bins
+    # sort data into tiles
 
     for l in data:
-        for (x, y) in bins.keys():
-
+        for i, t in enumerate(tile):
             lat, long = l[3:]
-
+            x, y = t[:2]
             if x <= long and long < x + WIDTH and y <= lat and lat < y + HEIGHT:
-                bins[(x,y)].append((l[1], l[2]))
+                tile[i][2].append(l[1])
                 break
 
-    # remove empty bins
+    # remove empty tiles
 
-    remove = []
-    for (x, y), bin_data in bins.items():
-        if len(bin_data) == 0:
-            remove.append((x,y))
-    for r in remove: bins.pop(r) 
+    new_tile = []
+    for t in tile:
+        if len(t[2]): new_tile.append(t)
+    tile = new_tile
 
-    # aggregate bin data
+    # replace RSSI list with PRR for each tile
     
-    for (x, y), bin_data in bins.items():
-        distSum, dropped = 0, 0
+    for t in tile:
+        dropped = 0
+        for r in t[2]:
+            if r == DROPPED_RSSI: dropped += 1
+        t[2] = 1 - dropped / len(t[2])
 
-        for d in bin_data:
-            if d[0] == DROPPED_RSSI: dropped += 1
-            distSum += d[1]
-
-        l = len(bin_data)
-        bins[(x,y)] = (distSum / l, 1 - dropped / l)
-
-    return bins
+    return tile
 
 
 def color(r, lim):
@@ -195,7 +185,7 @@ def map(data, grid_data, base, title):
     Plots data points color-coded by signal strength, and aggregated data squares color-coded by PRR.
     '''
 
-    fig, ax = plt.subplots(figsize=(6,9))
+    _, ax = plt.subplots(figsize=(6,9))
     plt.title(title)
 
     # background map
@@ -204,10 +194,10 @@ def map(data, grid_data, base, title):
         shp = gpds.read_file(f'mygeodata/map/{name}.shp')
         shp.plot(ax=ax, color=col, zorder=-1)
 
-    # grid
+    # PRR grid
 
-    for (x,y), d in grid_data.items():
-        c = color(d[1], PRR_LIMITS)
+    for x, y, prr in grid_data:
+        c = color(prr, PRR_LIMITS)
         p = plt.Rectangle((x,y), WIDTH, HEIGHT, color=c, alpha = 0.5)
         ax.add_patch(p)
 
@@ -230,39 +220,55 @@ def map(data, grid_data, base, title):
     gdf.plot(ax=ax, color='blue', markersize=20)
 
 
-def report(point_data, bin_data):
+def radius_intervals(point_data):
     '''
-    Inputs: point_data [ (seq, RSSI, dist, lat, long), ... ],
-    bin_data { (x,y): (dist, PRR), ... }
-    Reports concentric bin data
+    Input: point_data [ (seq, RSSI, dist, lat, long), ... ],
+    Output: list of radius interval data [ (min_radius, max_radius, num_points, meanRSSI, PRR), ... ]
     '''
 
     # make bins
 
-    RSSIs, PRRs = [], []
-    for i in range(0, MAX_DIST, BIN_RADIUS):
-        RSSIs.append([])
-        PRRs.append([])
+    bins = []
+    for i in range(MAX_DIST // BIN_RADIUS):
+        bins.append( [i * BIN_RADIUS, (i+1) * BIN_RADIUS, 0, 0, 0] )
    
-    # put RSSI and PRR in concentric bins 
+    # find num_datapoints, RSSI and PRR for each interval
     
-    for i in range(len(RSSIs)):
-
+    for i in range(len(bins)):
+        num, RSSIsum, dropped = 0, 0, 0
         for p in point_data:
-            if i * BIN_RADIUS <= p[2] and p[2] < (i+1) * BIN_RADIUS and p[1] != DROPPED_RSSI:
-                RSSIs[i].append(p[1])
-        
-        for d in bin_data.values():
-            if i * BIN_RADIUS <= d[0] and d[0] < (i+1) * BIN_RADIUS:
-                PRRs[i].append(d[1])
+            if i * BIN_RADIUS <= p[2] and p[2] < (i+1) * BIN_RADIUS:
+                num += 1
+                if p[1] == DROPPED_RSSI: dropped += 1
+                else: RSSIsum += p[1]
+        if num:
+            bins[i][2] = num
+            bins[i][3] = RSSIsum / (num - dropped) if (num - dropped) else DROPPED_RSSI
+            bins[i][4] = 1 - dropped / num
 
-    # print report
+    # remove intervals with no data points
 
-    for i in range(len(RSSIs)):
-        if len(RSSIs[i]) == 0 or len(PRRs[i]) == 0: continue
-        print(f'{i * BIN_RADIUS} <= distance < {(i+1) * BIN_RADIUS}')
-        print(f'Mean RSSI: {sum(RSSIs[i]) / len(RSSIs[i])}')
-        print(f'Mean PRR: {sum(PRRs[i]) / len(PRRs[i])}\n')
+    new_bins = []
+    for i, b in enumerate(bins):
+        if b[2]: new_bins.append(b)
+    bins = new_bins
+
+    # cast data to tuple
+
+    for i, b in enumerate(bins): bins[i] = tuple(b)
+
+    return tuple(bins)
+
+
+def report(radius_data):
+    '''
+    Prints num_datapoints, mean RSSI and PRR for each radius interval in radius_data
+    '''
+    for r in radius_data:
+        print(f'{r[0]} <= distance < {r[1]}')
+        print('Data points: {}'.format(r[2]))
+        print('Mean RSSI: {:0.4f}'.format(r[3]))
+        print('PRR: {:0.4f}\n'.format(r[4]))
 
 
 if __name__ == '__main__':
@@ -273,14 +279,16 @@ if __name__ == '__main__':
     Default is mapping and reporting.
     '''
 
-    exp = {
-        1: ('24-04', 'Reid', 7, 13),
-        2: ('24-04', 'Reid', 7, 18),
-        3: ('24-04', 'Reid', 8, 20),
-        4: ('24-04', 'Cameron', 7, 13),
-        5: ('24-04', 'Cameron', 7, 18),
-        6: ('24-04', 'Cameron', 8, 20),
-    }
+    exp = [
+        ('24-04', 'Reid', 7, 13),
+        ('24-04', 'Reid', 7, 18),
+        ('24-04', 'Reid', 8, 20),
+        ('24-04', 'Cameron', 7, 13),
+        ('24-04', 'Cameron', 7, 18),
+        ('24-04', 'Cameron', 8, 20)
+    ]
+
+    # parse command line options
 
     m = sys.argv[1] == '-m'
     r = sys.argv[1] == '-r'
@@ -290,18 +298,21 @@ if __name__ == '__main__':
     all = False
     if sys.argv[1] == '--all': all = True
 
-    for a in (range(1,7) if all else sys.argv[1:]):
+    #loop through datasets
+
+    for a in (range(6) if all else sys.argv[1:]):
 
         date, base, sf, tx = exp[int(a)]
         title = f'{date} {base} SF{sf} TX{tx}'
 
-        d = combine_data(date, base, sf, tx)
-        g = grid(d)
+        point_data = combine_data(date, base, sf, tx)
+        grid_data = grid(point_data)
 
         if not m:
-            print(f'{title}\n')
-            report(d, g)
+            print(f'\n{title}\n')
+            radius_data = radius_intervals(point_data)
+            report(radius_data)
 
-        if not r: map(d, g, base, title)
+        if not r: map(point_data, grid_data, base, title)
 
     plt.show(block=True)
