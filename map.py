@@ -53,7 +53,7 @@ def combine_data(date, location, sf, tx):
     '''
 
     try:
-        n = f'results/{date}-{location.capitalize()}-SF{sf}-{tx}dBm-{{}}.csv'
+        n = f'data/{date}-{location.capitalize()}-SF{sf}-{tx}dBm-{{}}.csv'
         r = open(n.format('Receiver'), 'r')
         s = open(n.format('Sender'), 'r')
   
