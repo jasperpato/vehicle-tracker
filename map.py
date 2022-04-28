@@ -334,17 +334,28 @@ if __name__ == '__main__':
         # compare parameter sets at each radius
 
         print('\n' + 15 * ' ', end='')
-        print(" SF7 TX13  SF7 TX18  SF8 TX20 ")
+        print("     SF7 TX13          SF7 TX18          SF8 TX20     ")
         for j in range(MAX_DIST // BIN_RADIUS):
             if not param_results[0][j] and not param_results[1][j] and not param_results[2][j]: continue
             print()
             print(f'{j * BIN_RADIUS:3} <= r < {(j+1) * BIN_RADIUS:3}:', end = '')
+            rssi1, prr1 = param_results[0][j][3:]
             for i in range(3):
-                if param_results[i][j]: print(f' {param_results[i][j][3]:7.02f}  ', end = '')
+                rssi, prr = param_results[i][j][3:]
+                if param_results[i][j]:
+                    if i > 0:
+                        print(f'  {rssi:7.02f} ', end = '')
+                        print(f'({(rssi - rssi1) / -rssi1 * 100:5.02}%) ', end='')
+                    else: print(f'     {rssi:7.02f}     ', end = '')
                 else: print(' ' * 10)
             print('\n' + 15 * ' ', end='')
             for i in range(3):
-                if param_results[i][j]: print(f'  {param_results[i][j][4]:5.04f}  ', end='')
+                rssi, prr = param_results[i][j][3:]
+                if param_results[i][j]:
+                    if i > 0:
+                        print(f'  {prr:7.04f} ', end='')
+                        print(f'({(prr - prr1) / prr1 * 100:5.01f}%) ', end='')
+                    else: print(f'     {prr:7.04f}     ', end='')
                 else: print(' ' * 10)
             print()
         print()
