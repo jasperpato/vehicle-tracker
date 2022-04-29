@@ -38,7 +38,7 @@ BIN_RADIUS = 30
 
 
 def usage():
-    print('Usage: python3 map.py [-m mapping only] [-r reporting only] *experiment_number(s)')
+    print('python3 map.py [-m: mapping only] [-r: reporting only] [--all: all datasets] *dataset_numbers')
     print('eg. python3 map.py 1 4')
 
 
@@ -255,7 +255,7 @@ def radius_intervals(point_data):
 
 if __name__ == '__main__':
     '''
-    Usage: python3 map.py [-m mapping only] [-r reporting only] [--all] *experiment_number(s)
+    python3 map.py [-m: mapping only] [-r: reporting only] [--all: all datasets] *dataset_numbers
     '''
 
     exp = [
