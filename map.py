@@ -327,6 +327,8 @@ if __name__ == '__main__':
                     param_results[i].append(param_data[i][j])
                     continue
 
+                # combine data with the same parameters from both experiments
+
                 meanRSSI = (rssi1 * num1 + rssi2 * num2) / (num1 + num2)
                 meanPRR = 1 - ((1 - prr1) * num1 + (1 - prr2) * num2) / (num1 + num2)
                 param_results[i].append((r1, r2, num1+num2, meanRSSI, meanPRR))
@@ -335,17 +337,34 @@ if __name__ == '__main__':
 
         print('\n' + 15 * ' ', end='')
         print("     SF7 TX13          SF7 TX18          SF8 TX20     ")
+
+        # for storing average PRR percentage increase
+
+        meanParams = [[0, 0, 0], [0, 0, 0]]
+
         for j in range(MAX_DIST // BIN_RADIUS):
+
+            # continue if no data points in interval
+
             if not param_results[0][j] and not param_results[1][j] and not param_results[2][j]: continue
+
             print()
             print(f'{j * BIN_RADIUS:3} <= r < {(j+1) * BIN_RADIUS:3}:', end = '')
             rssi1, prr1 = param_results[0][j][3:]
+
             for i in range(3):
                 rssi, prr = param_results[i][j][3:]
                 if param_results[i][j]:
                     if i > 0:
                         print(f'  {rssi:7.02f} ', end = '')
-                        print(f'({(rssi - rssi1) / -rssi1 * 100:5.02}%) ', end='')
+                        percent = (rssi - rssi1) / -rssi1 * 100
+                        print(f'({percent:5.02f}%) ', end='')
+
+                        # store percentage increase
+
+                        meanParams[i-1][0] += 1
+                        meanParams[i-1][1] += percent
+
                     else: print(f'     {rssi:7.02f}     ', end = '')
                 else: print(' ' * 10)
             print('\n' + 15 * ' ', end='')
@@ -354,10 +373,23 @@ if __name__ == '__main__':
                 if param_results[i][j]:
                     if i > 0:
                         print(f'  {prr:7.04f} ', end='')
-                        print(f'({(prr - prr1) / prr1 * 100:5.01f}%) ', end='')
+                        percent = (prr - prr1) / prr1
+                        print(f'({percent:5.02f}%) ', end='')
+
+                        # store percentage increase
+
+                        meanParams[i-1][2] += percent
+
                     else: print(f'     {prr:7.04f}     ', end='')
                 else: print(' ' * 10)
             print()
+        print()
+
+        # report mean PRR percentage increase
+
+        print('Mean PRR percentage increases:\n')
+        for t, p in zip(('SF7 TX18', 'SF8 TX20'), meanParams):
+            print(f'{t}: {p[2] / 12:5.04f}')
         print()
 
     plt.show(block=True)
