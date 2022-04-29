@@ -16,6 +16,7 @@ map.py cleans and analyses each dataset. It maps the RSSI of each data point and
 
 ```
 > git clone https://github.com/jasperpato/vehicle-tracker
+> cd vehicle-tracker
 > python3 -m venv venv
 > source venv/bin/activate
 > pip install -r req.txt
