@@ -373,7 +373,7 @@ if __name__ == '__main__':
                 if param_results[i][j]:
                     if i > 0:
                         print(f'  {prr:7.04f} ', end='')
-                        percent = (prr - prr1) / prr1
+                        percent = (prr - prr1) / prr1 * 100
                         print(f'({percent:5.02f}%) ', end='')
 
                         # store percentage increase
